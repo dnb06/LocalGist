@@ -3,41 +3,48 @@ import { onMounted } from 'vue';
 import { useSnippetStore } from '../store/snippetStore';
 import SnippetForm from '../components/SnippetForm.vue';
 import SnippetCard from '../components/SnippetCard.vue';
+import SearchBar from '../components/SearchBar.vue'; // <-- 1. Importar
 
-const snippetStore = useSnippetStore();
+const store = useSnippetStore();
 
 onMounted(() => {
-  snippetStore.fetchSnippets();
+  store.fetchSnippets();
 });
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
-    <header class="mb-8">
-      <h1 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-        <span class="text-blue-500">&lt;/&gt;</span> LocalGist
-      </h1>
-      <p class="text-gray-400 text-sm mt-1">Gestor personal de snippets y fragmentos de código.</p>
-    </header>
+  <div class="min-h-screen bg-gray-900 text-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+      <header class="mb-10">
+        <h1 class="text-4xl font-bold text-emerald-400 tracking-tight">LocalGist</h1>
+        <p class="text-gray-400 mt-2">Terminal Snippet & Command Manager</p>
+      </header>
 
-    <SnippetForm />
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1">
+          <SnippetForm />
+        </div>
 
-    <section>
-      <h2 class="text-xl font-bold text-gray-200 mb-4">Mis Snippets</h2>
-      <div v-if="snippetStore.loading" class="text-gray-400 py-4">Cargando snippets...</div>
-      <div v-else-if="snippetStore.error" class="bg-red-900/50 border border-red-700 text-red-200 p-4 rounded mb-4">
-        Error al conectar con backend: {{ snippetStore.error }}
+        <div class="lg:col-span-2">
+          <SearchBar /> <!-- <-- 2. Renderizar buscador -->
+          
+          <div v-if="store.loading" class="text-gray-400 animate-pulse">Cargando comandos...</div>
+          <div v-else-if="store.error" class="text-red-400 bg-red-900/20 p-4 rounded-lg">Error: {{ store.error }}</div>
+          <div v-else class="space-y-6">
+            
+            <!-- 3. Cambiar 'snippets' por 'filteredSnippets' -->
+            <SnippetCard 
+              v-for="snippet in store.filteredSnippets" 
+              :key="snippet.id" 
+              :snippet="snippet" 
+            />
+            
+            <div v-if="store.filteredSnippets.length === 0" class="text-center py-12 border-2 border-dashed border-gray-700 rounded-xl text-gray-500">
+              No se encontraron comandos.
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-else-if="snippetStore.snippets.length === 0" class="text-gray-500 py-8 text-center border border-dashed border-gray-700 rounded-lg">
-        No hay snippets registrados. ¡Crea el primero arriba!
-      </div>
-      <div v-else class="space-y-4">
-        <SnippetCard
-          v-for="snippet in snippetStore.snippets"
-          :key="snippet.id"
-          :snippet="snippet"
-        />
-      </div>
-    </section>
+    </div>
   </div>
 </template>

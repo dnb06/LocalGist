@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import Fuse from 'fuse.js';
 
 const API_URL = 'http://localhost:3001/api/snippets';
 
@@ -7,7 +8,21 @@ export const useSnippetStore = defineStore('snippetStore', {
     snippets: [] as any[],
     loading: false,
     error: null as string | null,
+    searchQuery: '', // <-- Nuevo estado
   }),
+  getters: {
+    // <-- Nuevo filtro Fuzzy
+    filteredSnippets(state) {
+      if (!state.searchQuery.trim()) {
+        return state.snippets;
+      }
+      const fuse = new Fuse(state.snippets, {
+        keys: ['title', 'tags', 'code', 'language'],
+        threshold: 0.3, // Permite ligeros errores tipográficos
+      });
+      return fuse.search(state.searchQuery).map(result => result.item);
+    }
+  },
   actions: {
     async fetchSnippets() {
       this.loading = true;
