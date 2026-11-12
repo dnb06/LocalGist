@@ -5,11 +5,12 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
+const snippetsRoutes = require('./routes/snippets');
+app.use('/api/snippets', snippetsRoutes);
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'LocalGist API is running' });
 });
