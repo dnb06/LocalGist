@@ -81,12 +81,11 @@ export const useSnippetStore = defineStore('snippetStore', {
         const response = await fetch(`${API_URL}/${id}`, {
           method: 'DELETE',
         });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        this.snippets = this.snippets.filter((snippet: any) => snippet.id !== id);
-        this.error = null;
-      } catch (error: any) {
-        this.error = error.message;
-        console.error('Error deleting snippet:', error);
+        if (!response.ok) throw new Error('Error al eliminar el snippet');
+        // Filtramos el array localmente para que desaparezca al instante de la pantalla
+        this.snippets = this.snippets.filter(s => s.id !== id);
+      } catch (err: any) {
+        this.error = err.message;
       }
     },
   },

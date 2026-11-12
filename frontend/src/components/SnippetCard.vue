@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useSnippetStore } from '../store/snippetStore';
 
 const props = defineProps({
   snippet: {
@@ -8,6 +9,7 @@ const props = defineProps({
   }
 });
 
+const store = useSnippetStore();
 const copied = ref(false);
 
 const copyCode = async () => {
@@ -21,11 +23,16 @@ const copyCode = async () => {
     console.error('Failed to copy!', err);
   }
 };
+
+const handleDelete = () => {
+  if (confirm(`Are you sure you want to delete "${props.snippet.title}"?`)) {
+    store.deleteSnippet(props.snippet.id);
+  }
+};
 </script>
 
 <template>
   <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-lg">
-    <!-- Cabecera de la tarjeta -->
     <div class="px-5 py-4 border-b border-gray-700 flex justify-between items-start">
       <div>
         <h3 class="text-lg font-semibold text-gray-100">{{ snippet.title }}</h3>
@@ -39,17 +46,24 @@ const copyCode = async () => {
         </div>
       </div>
       
-      <!-- Botón de copiar -->
-      <button 
-        @click="copyCode" 
-        class="text-xs px-3 py-1.5 rounded-md font-medium transition-colors border"
-        :class="copied ? 'bg-emerald-900/50 text-emerald-400 border-emerald-800' : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'"
-      >
-        {{ copied ? '¡Copiado!' : 'Copiar' }}
-      </button>
+      <div class="flex gap-2">
+        <button 
+          @click="copyCode" 
+          class="text-xs px-3 py-1.5 rounded-md font-medium transition-colors border"
+          :class="copied ? 'bg-emerald-900/50 text-emerald-400 border-emerald-800' : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'"
+        >
+          {{ copied ? 'Copied!' : 'Copy' }}
+        </button>
+        
+        <button 
+          @click="handleDelete" 
+          class="text-xs px-3 py-1.5 rounded-md font-medium transition-colors border bg-red-950/40 text-red-400 border-red-900 hover:bg-red-900/50"
+        >
+          Delete
+        </button>
+      </div>
     </div>
     
-    <!-- Bloque de código -->
     <div class="p-5 bg-gray-900/50 overflow-x-auto">
       <pre><code class="text-sm font-mono text-gray-300">{{ snippet.code }}</code></pre>
     </div>

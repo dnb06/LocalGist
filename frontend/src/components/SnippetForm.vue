@@ -2,86 +2,56 @@
 import { ref } from 'vue';
 import { useSnippetStore } from '../store/snippetStore';
 
-const snippetStore = useSnippetStore();
-
+const store = useSnippetStore();
 const title = ref('');
-const language = ref('python');
+const language = ref('bash');
 const tags = ref('');
 const code = ref('');
 
-const handleSubmit = async () => {
-  if (!title.value.trim() || !code.value.trim()) return;
-  
-  await snippetStore.addSnippet({
+const handleSubmit = () => {
+  if (!title.value || !code.value) return;
+  store.addSnippet({
     title: title.value,
     language: language.value,
     tags: tags.value,
-    code: code.value,
+    code: code.value
   });
-
   title.value = '';
-  language.value = 'python';
   tags.value = '';
   code.value = '';
 };
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit" class="bg-gray-800 p-6 rounded-lg shadow-md mb-8 border border-gray-700">
-    <h2 class="text-xl font-bold text-gray-100 mb-4">Nuevo Snippet</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-lg">
+    <h2 class="text-xl font-bold text-gray-100 mb-4">New Snippet</h2>
+    <form @submit.prevent="handleSubmit" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-1">Título</label>
-        <input
-          v-model="title"
-          type="text"
-          placeholder="Ej. Script de respaldo"
-          required
-          class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-100 focus:outline-none focus:border-blue-500"
-        />
+        <label class="block text-sm font-medium text-gray-300 mb-1">Title</label>
+        <input v-model="title" type="text" placeholder="e.g. System update script" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 text-sm focus:ring-emerald-500 focus:border-emerald-500" required />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-1">Lenguaje</label>
-        <select
-          v-model="language"
-          class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-100 focus:outline-none focus:border-blue-500"
-        >
+        <label class="block text-sm font-medium text-gray-300 mb-1">Language</label>
+        <select v-model="language" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 text-sm focus:ring-emerald-500 focus:border-emerald-500">
+          <option value="bash">bash</option>
           <option value="python">Python</option>
-          <option value="bash">Bash</option>
-          <option value="yaml">YAML</option>
           <option value="javascript">JavaScript</option>
-          <option value="typescript">TypeScript</option>
-          <option value="html">HTML</option>
-          <option value="css">CSS</option>
-          <option value="sql">SQL</option>
-          <option value="json">JSON</option>
+          <option value="cpp">C++</option>
+          <option value="docker">Docker</option>
+          <option value="tex">LaTeX</option>
         </select>
       </div>
-    </div>
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-300 mb-1">Tags (separados por coma)</label>
-      <input
-        v-model="tags"
-        type="text"
-        placeholder="python, backup, script"
-        class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-100 focus:outline-none focus:border-blue-500"
-      />
-    </div>
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-300 mb-1">Código</label>
-      <textarea
-        v-model="code"
-        rows="5"
-        placeholder="Escribe tu código aquí..."
-        required
-        class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-100 font-mono text-sm focus:outline-none focus:border-blue-500"
-      ></textarea>
-    </div>
-    <button
-      type="submit"
-      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
-    >
-      Guardar Snippet
-    </button>
-  </form>
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">Tags (comma separated)</label>
+        <input v-model="tags" type="text" placeholder="arch, pacman, update" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 text-sm focus:ring-emerald-500 focus:border-emerald-500" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">Code</label>
+        <textarea v-model="code" rows="4" placeholder="Write your command here..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 font-mono text-sm focus:ring-emerald-500 focus:border-emerald-500" required></textarea>
+      </div>
+      <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg transition-colors shadow-md">
+        Save Snippet
+      </button>
+    </form>
+  </div>
 </template>
