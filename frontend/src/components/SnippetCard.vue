@@ -24,10 +24,19 @@ const copyCode = async () => {
   }
 };
 
+const handleEdit = () => {
+  store.setEditingSnippet(props.snippet);
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // Subir suavemente al formulario
+};
+
 const handleDelete = () => {
   if (confirm(`Are you sure you want to delete "${props.snippet.title}"?`)) {
     store.deleteSnippet(props.snippet.id);
   }
+};
+
+const filterByTag = (tag: string) => {
+  store.setTagFilter(tag.trim());
 };
 </script>
 
@@ -36,12 +45,26 @@ const handleDelete = () => {
     <div class="px-5 py-4 border-b border-gray-700 flex justify-between items-start">
       <div>
         <h3 class="text-lg font-semibold text-gray-100">{{ snippet.title }}</h3>
-        <div class="flex gap-2 mt-2">
+        <div class="flex flex-wrap gap-2 mt-2 items-center">
           <span class="px-2.5 py-0.5 rounded text-xs font-medium bg-blue-900/50 text-blue-400 border border-blue-800">
             {{ snippet.language }}
           </span>
-          <span v-if="snippet.tags" class="px-2.5 py-0.5 rounded text-xs font-medium bg-gray-700 text-gray-300">
-            {{ snippet.tags }}
+          
+          <!-- Tags clicables para filtrar -->
+          <template v-if="snippet.tags">
+            <button 
+              v-for="tag in snippet.tags.split(',')" 
+              :key="tag"
+              @click="filterByTag(tag)"
+              class="px-2 py-0.5 rounded text-xs font-medium bg-gray-700 text-gray-300 hover:bg-emerald-800 hover:text-emerald-200 transition-colors border border-gray-600"
+            >
+              {{ tag.trim() }}
+            </button>
+          </template>
+
+          <!-- Indicador visual si hay filtro activo por tag -->
+          <span v-if="store.activeTagFilter" class="text-xs text-emerald-400 ml-2">
+            (Filtered by tag)
           </span>
         </div>
       </div>
@@ -53,6 +76,13 @@ const handleDelete = () => {
           :class="copied ? 'bg-emerald-900/50 text-emerald-400 border-emerald-800' : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'"
         >
           {{ copied ? 'Copied!' : 'Copy' }}
+        </button>
+
+        <button 
+          @click="handleEdit" 
+          class="text-xs px-3 py-1.5 rounded-md font-medium transition-colors border bg-yellow-950/40 text-yellow-400 border-yellow-900 hover:bg-yellow-900/50"
+        >
+          Edit
         </button>
         
         <button 

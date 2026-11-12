@@ -8,19 +8,30 @@ export const useSnippetStore = defineStore('snippetStore', {
     snippets: [] as any[],
     loading: false,
     error: null as string | null,
-    searchQuery: '', // <-- Nuevo estado
+    searchQuery: '',
+    activeTagFilter: null as string | null, // <-- Nuevo filtro por tag
+    editingSnippet: null as any | null,     // <-- Snippet en edición
   }),
   getters: {
-    // <-- Nuevo filtro Fuzzy
     filteredSnippets(state) {
-      if (!state.searchQuery.trim()) {
-        return state.snippets;
+      let result = state.snippets;
+
+      // 1. Filtrar por Tag activo si lo hay
+      if (state.activeTagFilter) {
+        result = result.filter(s => 
+          s.tags && s.tags.toLowerCase().includes(state.activeTagFilter.toLowerCase())
+        );
       }
-      const fuse = new Fuse(state.snippets, {
+
+      // 2. Filtrar por búsqueda Fuzzy (si hay texto)
+      if (!state.searchQuery.trim()) {
+        return result;
+      }
+      const fuse = new Fuse(result, {
         keys: ['title', 'tags', 'code', 'language'],
-        threshold: 0.3, // Permite ligeros errores tipográficos
+        threshold: 0.3,
       });
-      return fuse.search(state.searchQuery).map(result => result.item);
+      return fuse.search(state.searchQuery).map(res => res.item);
     }
   },
   actions: {
@@ -28,65 +39,68 @@ export const useSnippetStore = defineStore('snippetStore', {
       this.loading = true;
       try {
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error('Failed to fetch snippets');
         this.snippets = await response.json();
-        this.error = null;
-      } catch (error: any) {
-        this.error = error.message;
-        console.error('Error fetching snippets:', error);
+      } catch (err: any) {
+        this.error = err.message;
       } finally {
         this.loading = false;
       }
     },
-
-    async addSnippet(snippet: any) {
+    async addSnippet(snippet: { title: string; language: string; tags: string; code: string }) {
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(snippet),
         });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error('Failed to create snippet');
         const newSnippet = await response.json();
         this.snippets.unshift(newSnippet);
-        this.error = null;
-      } catch (error: any) {
-        this.error = error.message;
-        console.error('Error adding snippet:', error);
+      } catch (err: any) {
+        this.error = err.message;
       }
     },
-
-    async updateSnippet(id: number, updatedSnippet: any) {
+    async updateSnippet(id: number, snippet: { title: string; language: string; tags: string; code: string }) {
       try {
         const response = await fetch(`${API_URL}/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedSnippet),
+          body: JSON.stringify(snippet),
         });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        const index = this.snippets.findIndex((s: any) => s.id === id);
+        if (!response.ok) throw new Error('Failed to update snippet');
+        const updated = await response.json();
+        const index = this.snippets.findIndex(s => s.id === id);
         if (index !== -1) {
-          this.snippets[index] = data;
+          this.snippets[index] = updated;
         }
-        this.error = null;
-      } catch (error: any) {
-        this.error = error.message;
-        console.error('Error updating snippet:', error);
+        this.editingSnippet = null; // Limpiar modo edición
+      } catch (err: any) {
+        this.error = err.message;
       }
     },
-
     async deleteSnippet(id: number) {
       try {
         const response = await fetch(`${API_URL}/${id}`, {
           method: 'DELETE',
         });
-        if (!response.ok) throw new Error('Error al eliminar el snippet');
-        // Filtramos el array localmente para que desaparezca al instante de la pantalla
+        if (!response.ok) throw new Error('Failed to delete snippet');
         this.snippets = this.snippets.filter(s => s.id !== id);
+        if (this.editingSnippet?.id === id) {
+          this.cancelEdit();
+        }
       } catch (err: any) {
         this.error = err.message;
       }
     },
+    setEditingSnippet(snippet: any) {
+      this.editingSnippet = snippet;
+    },
+    cancelEdit() {
+      this.editingSnippet = null;
+    },
+    setTagFilter(tag: string | null) {
+      this.activeTagFilter = this.activeTagFilter === tag ? null : tag; // Toggle filtro
+    }
   },
 });
