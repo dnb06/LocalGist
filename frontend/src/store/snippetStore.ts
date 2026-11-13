@@ -9,21 +9,20 @@ export const useSnippetStore = defineStore('snippetStore', {
     loading: false,
     error: null as string | null,
     searchQuery: '',
-    activeTagFilter: null as string | null, // <-- Nuevo filtro por tag
-    editingSnippet: null as any | null,     // <-- Snippet en edición
+    activeTagFilter: null as string | null,
+    editingSnippet: null as any | null,
+    selectedIndex: 0,
   }),
   getters: {
     filteredSnippets(state) {
       let result = state.snippets;
 
-      // 1. Filtrar por Tag activo si lo hay
       if (state.activeTagFilter) {
         result = result.filter(s => 
-          s.tags && s.tags.toLowerCase().includes(state.activeTagFilter.toLowerCase())
+          s.tags && s.tags.toLowerCase().includes(state.activeTagFilter!.toLowerCase())
         );
       }
 
-      // 2. Filtrar por búsqueda Fuzzy (si hay texto)
       if (!state.searchQuery.trim()) {
         return result;
       }
@@ -37,6 +36,7 @@ export const useSnippetStore = defineStore('snippetStore', {
   actions: {
     async fetchSnippets() {
       this.loading = true;
+      this.error = null;
       try {
         const response = await fetch(API_URL);
         if (!response.ok) throw new Error('Failed to fetch snippets');
@@ -57,6 +57,7 @@ export const useSnippetStore = defineStore('snippetStore', {
         if (!response.ok) throw new Error('Failed to create snippet');
         const newSnippet = await response.json();
         this.snippets.unshift(newSnippet);
+        this.selectedIndex = 0;
       } catch (err: any) {
         this.error = err.message;
       }
@@ -74,7 +75,7 @@ export const useSnippetStore = defineStore('snippetStore', {
         if (index !== -1) {
           this.snippets[index] = updated;
         }
-        this.editingSnippet = null; // Limpiar modo edición
+        this.editingSnippet = null;
       } catch (err: any) {
         this.error = err.message;
       }
@@ -89,6 +90,7 @@ export const useSnippetStore = defineStore('snippetStore', {
         if (this.editingSnippet?.id === id) {
           this.cancelEdit();
         }
+        this.setSelectedIndex(this.selectedIndex);
       } catch (err: any) {
         this.error = err.message;
       }
@@ -100,7 +102,21 @@ export const useSnippetStore = defineStore('snippetStore', {
       this.editingSnippet = null;
     },
     setTagFilter(tag: string | null) {
-      this.activeTagFilter = this.activeTagFilter === tag ? null : tag; // Toggle filtro
+      this.activeTagFilter = this.activeTagFilter === tag ? null : tag;
+      this.selectedIndex = 0;
+    },
+    setSelectedIndex(index: number) {
+      const total = this.filteredSnippets.length;
+      if (total === 0) {
+        this.selectedIndex = 0;
+        return;
+      }
+      if (index < 0) this.selectedIndex = 0;
+      else if (index >= total) this.selectedIndex = total - 1;
+      else this.selectedIndex = index;
+    },
+    resetSelectedIndex() {
+      this.selectedIndex = 0;
     }
-  },
+  }
 });
