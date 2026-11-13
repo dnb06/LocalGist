@@ -5,27 +5,30 @@ LocalGist is a hyper-fast, minimalist, and privacy-focused snippet and terminal 
 
 ## 2. Features
 
-### MVP (v0.1.0)
-* **US-01: Snippet & Syntax Manager:** Full CRUD interface for terminal commands and code blocks with syntax highlighting (`highlight.js`), categorized by language and tags.
-* **US-02: Fuzzy Search & Clipboard (Core Loop):** Real-time, typo-tolerant search using `fuse.js`. One-click or one-keystroke copy to clipboard with visual feedback.
-* **US-03: Power-User Keyboard Navigation:** Zero-mouse workflow. Global shortcut (`Ctrl+K` / `Cmd+K`) to focus search, arrow keys to navigate results, and `Enter` to copy directly to the clipboard.
-* **US-04: The Terminal Oracle (Gemini AI):** A dual-mode AI assistant. 
-  * *Generate Mode:* Translate natural language (e.g., "delete all stopped docker containers") into raw, ready-to-save commands.
-  * *Explain Mode:* Break down cryptic, dangerous, or complex commands line-by-line, explaining every flag and parameter before execution.
+- **Full CRUD Operations:** Create, view, edit, and delete terminal commands and code snippets.
+- **Instant Fuzzy Search:** Powered by `Fuse.js` to search across titles, tags, languages, and code blocks in real time.
+- **1-Click Tag Filtering:** Filter your snippets immediately by clicking on any tag pill.
+- **One-Click Copy:** Copy commands directly to your system clipboard.
+- **Privacy First:** Your SQLite database (`localgist.db`) is ignored by Git and stays strictly on your local machine.
 
-### Backlog (v0.2.0+)
-* **US-05:** Dynamic exporter to `.bash_aliases` or `.zshrc` files.
-* **US-06:** Cloud synchronization with the GitHub Gists API.
+## 3. Tech Stack
 
-## 3. How to run it
+- **Frontend:** Vue 3 (Composition API), TypeScript, Pinia, Tailwind CSS, Vite
+- **Backend:** Node.js, Express
+- **Database:** SQLite3
+- **Infrastructure:** Docker & Docker Compose
+
+## 4. How to run it
 LocalGist is designed to be run locally using Docker and Docker Compose to ensure a reproducible environment across any Linux machine.
 
 ### Prerequisites
-- Docker & Docker Compose
-- A Gemini API Key (Get it from Google AI Studio)
+- [Git](https://git-scm.com/)
+- [Docker](https://docs.docker.com/get-docker/) & Docker Compose
 
 ### Setup
 1. Clone the repository:
    ```bash
    git clone [https://github.com/dnb06/localgist.git](https://github.com/dnb06/localgist.git)
    cd localgist
+   chmod +x start.sh
+   ./start.sh
