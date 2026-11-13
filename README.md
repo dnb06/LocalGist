@@ -32,3 +32,4 @@ LocalGist is designed to be run locally using Docker and Docker Compose to ensur
    cd localgist
    chmod +x start.sh
    ./start.sh
+2. Once the containter is running open http://localhost:3000 in your browser.
