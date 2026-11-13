@@ -1,29 +1,48 @@
-#  LocalGist - AI Agent Context & Guidelines
+# AGENTS.md — Project Context and Development Guidelines
 
-## 1. Project Philosophy
-LocalGist is a minimalist, privacy-first terminal snippet and command manager designed for Linux power users and system administrators. 
-- **Core principles:** Extreme speed, local-first (zero latency), keyboard-driven navigation ("hacker/dark mode" aesthetic), and AI-augmented terminal assistance.
+## 1. Project Overview
 
-## 2. Tech Stack & Architecture
-- **Frontend:** Vue 3 (Composition API, `<script setup lang="ts">`), Vite, TypeScript.
-- **Styling:** Tailwind CSS (Dark mode default).
-- **Frontend Libraries:** `vue-router`, `pinia` (state), `fuse.js` (fuzzy search), `highlight.js` (syntax highlighting), `@vueuse/core` (keyboard shortcuts, clipboard).
-- **Backend / API Proxy:** Node.js + Express (serves as a local API to hide the Gemini API key and handle DB operations).
-- **Database:** SQLite (via `better-sqlite3` in Node.js) for zero-latency local storage.
-- **AI Integration:** `@google/genai` SDK (Model: `gemini-2.5-flash`).
-- **Infrastructure:** Docker (`Dockerfile`, `docker-compose.yml`), DevContainer, Vitest (testing).
+**LocalGist** is a local-first web application for storing, searching, filtering, and copying terminal commands and code snippets. It is designed for low-latency operation, keyboard-first ergonomics, and complete data privacy using a containerized SQLite backend. External cloud dependencies and AI integrations are intentionally excluded from the project scope.
 
-## 3. Strict Development Rules & Git Workflow
-When acting as an AI pair programmer on this project, you MUST adhere to the following rules:
+---
 
-### Git Flow
-1. **Branches:** `main` is for production only. `develop` is the integration branch. NEVER commit directly to `main` or `develop`.
-2. **Feature Cycle:** All user stories must be developed in isolated branches (e.g., `feature/us-01-snippets`) branching off from `develop`.
-3. **Conventional Commits:** Use standard prefixes: `feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`.
-4. **Validation:** Before merging a `feature/*` branch into `develop` (using `--no-ff`), tests (Vitest), linter, and build must pass.
+## 2. Architecture and Technical Specifications
 
-### AI Collaboration Protocol ("Plan before code")
-1. **Understand the User Story:** Read the acceptance criteria carefully.
-2. **Propose Architecture:** Before generating any application code, outline the files to create/modify, the data flow, and the logic.
-3. **Wait for Approval:** Do NOT write the actual source code until the human developer explicitly replies with "OK" or approves the plan.
-4. **Iterate:** Address one User Story at a time.
+### Frontend (`/frontend`)
+- **Framework:** Vue 3 using `<script setup lang="ts">` (Composition API).
+- **State Management:** Pinia (`src/store/snippetStore.ts`) acts as the single source of truth for snippets, search queries, active tag filters, editing state, and keyboard selection index.
+- **Search Engine:** Fuse.js configured with a `0.3` threshold indexing `title`, `tags`, `code`, and `language`.
+- **Styling:** Tailwind CSS with a dark-first color palette (`bg-gray-900`, `bg-gray-800`, and `emerald` accents).
+- **Port:** Exposes port `3000` on the host.
+
+### Backend (`/backend`)
+- **Runtime & Framework:** Node.js with Express.
+- **Database:** SQLite3 persisted in `backend/localgist.db`.
+- **CORS:** Enabled to allow communication from `http://localhost:3000`.
+- **Port:** Exposes port `3001` on the host.
+
+### Infrastructure (`docker-compose.yml`)
+- Multi-container setup (`frontend` and `backend`) with bind mounts for live reload during development and anonymous volumes for `/app/node_modules`.
+- Maintains backward compatibility between Docker Compose v1 and v2.
+
+---
+
+## 3. Implemented Scope (User Stories)
+
+- **US-01 (Core CRUD & Infrastructure):** Dockerized frontend/backend architecture, SQLite persistence, snippet creation, listing, and deletion.
+- **US-02 (Fuzzy Search & Clipboard):** Real-time fuzzy filtering via Fuse.js and one-click copy to clipboard with visual state feedback.
+- **US-03 (Snippet Edition & Tag Filtering):** Reactive form mode switching between Create and Edit (`PUT /api/snippets/:id`), and interactive tag pills for instant category filtering.
+- **US-04 (Keyboard Navigation):** Global keyboard listener supporting `Ctrl+K`/`Cmd+K` search focus, `ArrowUp`/`ArrowDown` card selection highlighting, and `Enter` to copy the focused snippet.
+
+---
+
+## 4. Coding Standards and Conventions
+
+1. **Language:** All UI labels, code identifiers, comments, commit messages, and documentation must be written in **English**.
+2. **Database Exclusion:** Never commit `*.db` files to the repository. The `.gitignore` file must always enforce `*.db` and `**/*.db`.
+3. **YAML Formatting:** Always use 2 spaces for indentation in `docker-compose.yml`. Never use tab characters.
+4. **Git Workflow:**
+   - `main`: Production-ready, stable releases.
+   - `develop`: Integration branch for completed features.
+   - `feature/us-XX-*`: Feature branches for specific user stories.
+   - Conventional Commits format (`feat:`, `fix:`, `chore:`, `docs:`).
